@@ -1,6 +1,9 @@
 package home
 
-import "io/fs"
+import (
+	"bytes"
+	"io/fs"
+)
 
 var nopFS fs.FS = &nopFSImpl{}
 
@@ -12,4 +15,29 @@ func (f *nopFSImpl) Open(path string) (fs.File, error) {
 		Path: path,
 		Err:  fs.ErrNotExist,
 	}
+}
+
+func checkIsDir(targetFS fs.FS, targetPath string) (bool, error) {
+	info, err := fs.Stat(targetFS, targetPath)
+	if err != nil {
+		return false, err
+	}
+
+	return info.IsDir(), nil
+}
+
+type compositeError struct {
+	Text   string
+	Errors []error
+}
+
+func (c *compositeError) Error() string {
+	buf := bytes.NewBufferString(c.Text)
+
+	for _, err := range c.Errors {
+		buf.WriteString("\n* ")
+		buf.WriteString(err.Error())
+	}
+
+	return buf.String()
 }

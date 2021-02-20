@@ -3,6 +3,7 @@ package main
 import (
 	"crypto/tls"
 	"mime"
+	"os"
 
 	"github.com/belak/home"
 )
@@ -12,7 +13,8 @@ func main() {
 	_ = mime.AddExtensionType(".gemini", "text/gemini")
 
 	server := home.Server{
-		TLS: &tls.Config{},
+		TLS:     &tls.Config{},
+		Content: os.DirFS("content"),
 	}
 
 	cert, err := tls.LoadX509KeyPair("./server-cert.pem", "./server-key.pem")
