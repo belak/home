@@ -3,86 +3,18 @@ package home
 import (
 	"bufio"
 	"bytes"
-	"fmt"
+	"html/template"
 	"io"
 	"io/fs"
 	"path"
-	"sort"
 	"strings"
-	"time"
+	"unicode"
 
 	"gopkg.in/yaml.v3"
 )
 
-type PostMetadata struct {
-	Slug string `yaml:"-"`
-	Path string `yaml:"-"`
-
-	Title       string    `yaml:"title"`
-	Tags        []string  `yaml:"tags"`
-	ShowUpdated bool      `yaml:"show_updated"`
-	Draft       bool      `yaml:"draft"`
-	Date        time.Time `yaml:"date"`
-	Updated     time.Time `yaml:"updated"`
-}
-
-func (pm *PostMetadata) DisplayTitle() string {
-	if pm.Title != "" {
-		return pm.Title
-	}
-
-	formattedDate := pm.Date.Format("2006-01-02")
-
-	slug := pm.Slug
-
-	// Trim off common slug prefixes (like the date) because we
-	// already display this.
-	slug = strings.TrimPrefix(slug, formattedDate)
-	slug = strings.TrimPrefix(slug, " - ")
-	slug = strings.TrimPrefix(slug, "-")
-
-	return slug
-}
-
-type cachedPost struct {
-	Meta *PostMetadata
-	Body string
-}
-
-func (s *Server) lookupPosts(includeDrafts bool) []*PostMetadata {
-	s.cachedPostsLock.RLock()
-	defer s.cachedPostsLock.RUnlock()
-
-	var posts []*PostMetadata
-	for _, post := range s.cachedPosts {
-		// Skip all draft posts
-		if !includeDrafts && post.Meta.Draft {
-			continue
-		}
-
-		posts = append(posts, post.Meta)
-	}
-
-	sort.Slice(posts, func(i, j int) bool {
-		return posts[i].Date.After(posts[j].Date)
-	})
-
-	return posts
-}
-
-func (s *Server) lookupCachedPost(name string) *cachedPost {
-	s.cachedPostsLock.RLock()
-	defer s.cachedPostsLock.RUnlock()
-
-	return s.cachedPosts[name]
-}
-
 func (s *Server) lookupPostFS(pm *PostMetadata) (fs.FS, error) {
-	isDir, err := checkIsDir(s.Content, pm.Path)
-	if err != nil {
-		return nil, err
-	}
-
+	isDir, _ := checkIsDir(s.Content, pm.Path)
 	if !isDir {
 		return nopFS, nil
 	}
@@ -90,60 +22,16 @@ func (s *Server) lookupPostFS(pm *PostMetadata) (fs.FS, error) {
 	return fs.Sub(s.Content, pm.Path)
 }
 
-func (s *Server) updateCachedPosts() error {
-	s.cachedPostsLock.Lock()
-	defer s.cachedPostsLock.Unlock()
+func (s *Server) readPost(targetPath string) (*PostContext, error) {
+	isDir, _ := checkIsDir(s.Content, targetPath)
 
-	entries, err := fs.ReadDir(s.Content, "posts")
-	if err != nil {
-		return err
-	}
-
-	var errs []error
-	newPosts := make(map[string]*cachedPost)
-
-	for _, entry := range entries {
-		name := entry.Name()
-
-		post, err := s.readCachedPost(name)
-		if err != nil {
-			errs = append(errs, fmt.Errorf("%s: %w", name, err))
-			continue
-		}
-
-		if _, ok := newPosts[post.Meta.Slug]; ok {
-			errs = append(errs, fmt.Errorf("%s: slug collision with %s, overwriting", name, post.Meta.Path))
-		}
-
-		newPosts[post.Meta.Slug] = post
-	}
-
-	s.cachedPosts = newPosts
-
-	if len(errs) > 0 {
-		return &compositeError{
-			Text:   "failed to update cached files",
-			Errors: errs,
-		}
-	}
-
-	return nil
-}
-
-func (s *Server) readCachedPost(name string) (*cachedPost, error) {
-	targetPath := path.Join("posts", name)
-
-	isDir, err := checkIsDir(s.Content, targetPath)
-	if err != nil {
-		return nil, err
-	}
-
+	var err error
 	var f fs.File
 
 	if isDir {
 		f, err = s.Content.Open(path.Join(targetPath, "index.gmi"))
 	} else {
-		f, err = s.Content.Open(targetPath)
+		f, err = s.Content.Open(strings.TrimSuffix(targetPath, ".gmi") + ".gmi")
 	}
 
 	if err != nil {
@@ -159,10 +47,12 @@ func (s *Server) readCachedPost(name string) (*cachedPost, error) {
 	}
 
 	meta := PostMetadata{
-		Slug: strings.TrimSuffix(name, ".gmi"),
+		Slug: strings.TrimSuffix(path.Base(targetPath), ".gmi"),
 		Path: targetPath,
 	}
 
+	// If the first line is ---, we need to scan through the file until another
+	// --- is reached and parse what's between that as the frontmatter.
 	var frontmatterLines []string
 	if bytes.Equal(line, []byte("---\n")) {
 		_, _ = buf.Discard(4)
@@ -186,28 +76,27 @@ func (s *Server) readCachedPost(name string) (*cachedPost, error) {
 			return nil, err
 		}
 
-		if meta.Updated.IsZero() {
+		if meta.Lastmod.IsZero() {
 			info, err := f.Stat()
 			if err != nil {
 				return nil, err
 			}
-
-			meta.Updated = info.ModTime()
+			meta.Lastmod = info.ModTime()
 		}
 
 		if meta.Date.IsZero() {
-			meta.Date = meta.Updated
+			meta.Date = meta.Lastmod
 		}
 	}
 
-	// Skip any newlines at the start of the file
+	// Skip any leading spaces at the start of the file
 	for {
 		b, err := buf.ReadByte()
 		if err != nil {
 			return nil, err
 		}
 
-		if b != '\n' {
+		if !unicode.IsSpace(rune(b)) {
 			_ = buf.UnreadByte()
 			break
 		}
@@ -218,8 +107,12 @@ func (s *Server) readCachedPost(name string) (*cachedPost, error) {
 		return nil, err
 	}
 
-	return &cachedPost{
-		Meta: &meta,
-		Body: string(data),
+	geminiContent := string(data)
+	htmlContent := gemtextToHtml(geminiContent)
+
+	return &PostContext{
+		PostMetadata:  meta,
+		GeminiContent: geminiContent,
+		HtmlContent:   template.HTML(htmlContent),
 	}, nil
 }
