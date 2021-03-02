@@ -9,12 +9,10 @@ import (
 )
 
 type Server struct {
-	TLS     *tls.Config
-	Content fs.FS
-}
-
-func NewServer() *Server {
-	return &Server{}
+	TLS       *tls.Config
+	Content   fs.FS
+	Static    fs.FS
+	Templates fs.FS
 }
 
 func (s *Server) ListenAndServe() error {

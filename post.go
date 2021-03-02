@@ -13,7 +13,7 @@ import (
 	"gopkg.in/yaml.v3"
 )
 
-func (s *Server) lookupPostFS(pm *PostMetadata) (fs.FS, error) {
+func (s *Server) lookupArticleFS(pm *ArticleMetadata) (fs.FS, error) {
 	isDir, _ := checkIsDir(s.Content, pm.Path)
 	if !isDir {
 		return nopFS, nil
@@ -22,7 +22,7 @@ func (s *Server) lookupPostFS(pm *PostMetadata) (fs.FS, error) {
 	return fs.Sub(s.Content, pm.Path)
 }
 
-func (s *Server) readPost(targetPath string) (*PostContext, error) {
+func (s *Server) readArticle(targetPath string) (*ArticleContext, error) {
 	isDir, _ := checkIsDir(s.Content, targetPath)
 
 	var err error
@@ -46,7 +46,7 @@ func (s *Server) readPost(targetPath string) (*PostContext, error) {
 		return nil, err
 	}
 
-	meta := PostMetadata{
+	meta := ArticleMetadata{
 		Slug: strings.TrimSuffix(path.Base(targetPath), ".gmi"),
 		Path: targetPath,
 	}
@@ -110,8 +110,8 @@ func (s *Server) readPost(targetPath string) (*PostContext, error) {
 	geminiContent := string(data)
 	htmlContent := gemtextToHtml(geminiContent)
 
-	return &PostContext{
-		PostMetadata:  meta,
+	return &ArticleContext{
+		Meta:          &meta,
 		GeminiContent: geminiContent,
 		HtmlContent:   template.HTML(htmlContent),
 	}, nil

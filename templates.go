@@ -2,11 +2,42 @@ package home
 
 import (
 	"html/template"
+	"net/http"
 	"time"
 )
 
+func (s *Server) siteContext() *SiteContext {
+	return &SiteContext{
+		Title: "Coded by Kaleb",
+	}
+}
+
+func (s *Server) templateContext(path, section string, page interface{}) *TemplateContext {
+	return &TemplateContext{
+		Site:      s.siteContext(),
+		Permalink: template.URL(path),
+		Section:   section,
+		Page:      page,
+	}
+}
+
+func (s *Server) httpExecuteTemplate(w http.ResponseWriter, r *http.Request, tmplName, section string, page interface{}) {
+	tmplCtx := s.templateContext(r.URL.Path, section, page)
+
+	tmpl, err := template.ParseFS(s.Templates, "base.html", "partials/*.html", tmplName)
+	if err != nil {
+		panic(err.Error())
+	}
+
+	err = tmpl.ExecuteTemplate(w, tmplName, tmplCtx)
+	if err != nil {
+		panic(err.Error())
+	}
+}
+
 type TemplateContext struct {
-	Site      SiteContext
+	Site      *SiteContext
+	Feeds     []*FeedContext
 	Permalink template.URL
 	Section   string
 	Page      interface{}
@@ -14,12 +45,11 @@ type TemplateContext struct {
 
 type SiteContext struct {
 	Title string
-	Feeds []FeedContext
-	Menus []MenuItemContext
-	Tags  []TagContext
+	Menus []*MenuItemContext
 }
 
 type FeedContext struct {
+	Title     string
 	Rel       string
 	MediaType string
 	URL       template.URL
@@ -37,11 +67,11 @@ type TagContext struct {
 	URL   template.URL
 }
 
-type PostListContext struct {
-	Posts []PostMetadata
+type ArticleListContext struct {
+	Posts []*ArticleMetadata
 }
 
-type PostMetadata struct {
+type ArticleMetadata struct {
 	Title       string    `yaml:"title"`
 	Slug        string    `yaml:"-"`
 	Path        string    `yaml:"-"`
@@ -52,8 +82,12 @@ type PostMetadata struct {
 	Tags        []string  `yaml:"tags"`
 }
 
-type PostContext struct {
-	PostMetadata
+type ArticleContext struct {
+	Meta          *ArticleMetadata
 	GeminiContent string
 	HtmlContent   template.HTML
+}
+
+type NotFoundContext struct {
+	Path string
 }

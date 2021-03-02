@@ -13,8 +13,10 @@ func main() {
 	_ = mime.AddExtensionType(".gemini", "text/gemini")
 
 	server := home.Server{
-		TLS:     &tls.Config{},
-		Content: os.DirFS("content"),
+		TLS:       &tls.Config{},
+		Content:   os.DirFS("content"),
+		Static:    os.DirFS("content/static"),
+		Templates: os.DirFS("content/templates"),
 	}
 
 	cert, err := tls.LoadX509KeyPair("./server-cert.pem", "./server-key.pem")
