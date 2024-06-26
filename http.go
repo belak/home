@@ -10,9 +10,8 @@ import (
 )
 
 var staticFS = os.DirFS("static")
-var templatesFS = os.DirFS("templates")
 
-func (s *Server) serveHttp() error {
+func (s *Server) serveHttp(ctx context.Context) error {
 	mux := chi.NewMux()
 
 	mux.Use(middleware.Logger)
@@ -24,12 +23,12 @@ func (s *Server) serveHttp() error {
 
 	mux.NotFound(s.httpNotFoundHandler)
 
-	return http.ListenAndServe(":8080", mux)
+	return http.ListenAndServe(s.config.BindAddr, mux)
 }
 
 func (s *Server) httpNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
-	s.httpExecuteTemplate(w, r, "404.html", "", &NotFoundContext{Path: r.URL.Path})
+	s.httpExecuteTemplate(w, r, "404.html", &NotFoundContext{Path: r.URL.Path})
 }
 
 func (s *Server) httpIndexHandler(w http.ResponseWriter, r *http.Request) {

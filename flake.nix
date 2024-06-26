@@ -17,6 +17,7 @@
             nativeBuildInputs = [
               pkgs.go
               pkgs.gopls
+              pkgs.gotools
             ];
           };
         }

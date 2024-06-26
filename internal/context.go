@@ -3,6 +3,7 @@ package internal
 import (
 	"context"
 	"fmt"
+	"log/slog"
 	"net/http"
 )
 
@@ -18,8 +19,8 @@ func (c contextKey) String() string {
 	return fmt.Sprintf("ContextKey<%s>", string(c))
 }
 
-func ExtractLogger(ctx context.Context) *Logger {
-	if logger, ok := ctx.Value(LoggerContextKey).(*Logger); ok {
+func ExtractLogger(ctx context.Context) *slog.Logger {
+	if logger, ok := ctx.Value(LoggerContextKey).(*slog.Logger); ok {
 		return logger
 	}
 

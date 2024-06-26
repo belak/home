@@ -1,13 +1,14 @@
 package home
 
 import (
-	"html/template"
 	"net/http"
+
+	"github.com/belak/home/internal"
 )
 
 func (s *Server) siteContext() *SiteContext {
 	return &SiteContext{
-		Title: "Coded by Kaleb",
+		Title: "Belak's Tools",
 	}
 }
 
@@ -18,18 +19,11 @@ func (s *Server) templateContext(page interface{}) *TemplateContext {
 	}
 }
 
-func (s *Server) httpExecuteTemplate(w http.ResponseWriter, r *http.Request, tmplName, section string, page interface{}) {
+func (s *Server) httpExecuteTemplate(w http.ResponseWriter, r *http.Request, tmplName string, page interface{}) {
+	ctx := r.Context()
 	tmplCtx := s.templateContext(page)
 
-	tmpl, err := template.ParseFS(templatesFS, "base.html", "partials/*.html", tmplName)
-	if err != nil {
-		panic(err.Error())
-	}
-
-	err = tmpl.ExecuteTemplate(w, tmplName, tmplCtx)
-	if err != nil {
-		panic(err.Error())
-	}
+	internal.RenderTemplate(ctx, w, tmplName, tmplCtx)
 }
 
 type TemplateContext struct {
@@ -39,13 +33,6 @@ type TemplateContext struct {
 
 type SiteContext struct {
 	Title string
-	Menus []*MenuItemContext
-}
-
-type MenuItemContext struct {
-	Name    string
-	Section string
-	URL     template.URL
 }
 
 type NotFoundContext struct {

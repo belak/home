@@ -6,12 +6,11 @@ import (
 	"html/template"
 	"io"
 	"io/fs"
+	"log/slog"
 	"net/http"
 	"path/filepath"
 	"reflect"
 	"strings"
-
-	"github.com/Masterminds/sprig/v3"
 )
 
 type TemplateSet struct {
@@ -22,7 +21,7 @@ type TemplateSet struct {
 // and loading page templates, this function has a few flags which allow it to
 // react in different ways, the most important of which is updateBase, which
 // updates the baseTemplate rather than cloning it.
-func loadTemplates(logger *Logger, rootFS fs.FS, dir string, baseTemplate *template.Template, updateBase bool) (map[string]*template.Template, error) {
+func loadTemplates(logger *slog.Logger, rootFS fs.FS, dir string, baseTemplate *template.Template, updateBase bool) (map[string]*template.Template, error) {
 	ret := make(map[string]*template.Template)
 
 	err := fs.WalkDir(rootFS, dir, func(target string, d fs.DirEntry, err error) error {
@@ -58,7 +57,10 @@ func loadTemplates(logger *Logger, rootFS fs.FS, dir string, baseTemplate *templ
 			return nil
 		}
 
-		logger.Debugf("Loading template %s from %q", templateName, target)
+		logger.With(
+			"templateName", templateName,
+			"target", target,
+		).Debug("loading template")
 
 		// Here's another footgun - when using ParseFS, the template package
 		// lops off the directory name and just uses the basename of the file.
@@ -86,19 +88,15 @@ func loadTemplates(logger *Logger, rootFS fs.FS, dir string, baseTemplate *templ
 	return ret, nil
 }
 
-func NewTemplateSet(logger *Logger, rootFS fs.FS, funcs ...template.FuncMap) (*TemplateSet, error) {
+func NewTemplateSet(logger *slog.Logger, rootFS fs.FS, funcs ...template.FuncMap) (*TemplateSet, error) {
 	ts := &TemplateSet{
 		templates: make(map[string]*template.Template),
 	}
 
 	baseTemplate := template.New("")
 
-	// Add any common template funcs we care about - we currently add in all the
-	// sprig helpers . Note that functions need to be set up before loading
-	// templates, or loading the templates will error.
-	baseTemplate.Funcs(sprig.FuncMap())
-
-	// Set up any additional built-in functions.
+	// Add any common template funcs we care about. Note that functions need to
+	// be set up before loading templates, or loading the templates will error.
 	baseTemplate.Funcs(template.FuncMap{
 		"hasField": templateHasField,
 	})
@@ -146,14 +144,14 @@ func TemplateMiddleware(ts *TemplateSet) func(http.Handler) http.Handler {
 	return contextValueMiddleware(TemplateSetContextKey, ts)
 }
 
-func Render(ctx context.Context, w io.Writer, name string, data interface{}) {
+func RenderTemplate(ctx context.Context, w io.Writer, name string, data interface{}) {
 	logger := ExtractLogger(ctx).With("template_name", name)
 	logger.Debug("rendering template")
 
 	templates := ExtractTemplates(ctx)
 	err := templates.Execute(w, name, data)
 	if err != nil {
-		logger.WithError(err).Error("failed to render template")
+		logger.With("error", err).Error("failed to render template")
 	}
 }
 
