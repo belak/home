@@ -31,6 +31,6 @@ func NewLogger() (*slog.Logger, error) {
 	return logger, err
 }
 
-func LoggerMiddleware(logger *slog.Logger) func(http.Handler) http.Handler {
+func InjectLoggerMiddleware(logger *slog.Logger) func(http.Handler) http.Handler {
 	return contextValueMiddleware(LoggerContextKey, logger)
 }

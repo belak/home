@@ -23,9 +23,9 @@ type Server struct {
 }
 
 func (s *Server) ListenAndServe() error {
-	group, _ := errgroup.WithContext(context.Background())
+	group, ctx := errgroup.WithContext(context.Background())
 
-	group.Go(func() {
+	group.Go(func() error {
 		return s.serveHttp(ctx)
 	})
 
