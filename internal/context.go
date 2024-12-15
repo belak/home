@@ -10,7 +10,6 @@ import (
 type contextKey string
 
 const (
-	TemplateSetContextKey contextKey = "TemplateSet"
 	LoggerContextKey      contextKey = "Logger"
 	CurrentUserContextKey contextKey = "CurrentUser"
 )
@@ -25,14 +24,6 @@ func ExtractLogger(ctx context.Context) *slog.Logger {
 	}
 
 	panic("no logger in context")
-}
-
-func ExtractTemplates(ctx context.Context) *TemplateSet {
-	if ts, ok := ctx.Value(TemplateSetContextKey).(*TemplateSet); ok {
-		return ts
-	}
-
-	panic("no template set in context")
 }
 
 // contextValueMiddleware is a convenience function which stores a static value in

@@ -1,0 +1,17 @@
+package templates
+
+templ Page(title string) {
+	<!DOCTYPE html>
+	<html lang="en" data-color-mode="auto" data-dark-theme="dark" data-light-theme="light">
+		<head>
+			<meta charset="utf-8"/>
+			<title>{ title } - Belak's Tools</title>
+			<meta name="viewport" content="width=device-width, initial-scale=1"/>
+			<link rel="stylesheet" href="/static/css/pico-2.0.6.min.css"/>
+			<script src="/static/js/htmx-2.0.0.min.js"></script>
+		</head>
+		<body>
+			{ children... }
+		</body>
+	</html>
+}

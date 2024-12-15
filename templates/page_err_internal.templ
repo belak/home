@@ -1,0 +1,10 @@
+package templates
+
+templ PageError(err error) {
+	@Page("Internal Error") {
+		<fieldset>
+			<legend>Error</legend>
+			An internal error has occured: { err.Error() }
+		</fieldset>
+	}
+}

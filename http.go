@@ -6,8 +6,10 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-chi/chi"
-	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
+	"github.com/go-chi/chi/v5/middleware"
+
+	"github.com/belak/home/templates"
 )
 
 var staticFS = os.DirFS("static")
@@ -29,7 +31,8 @@ func (s *Server) serveHttp(ctx context.Context) error {
 
 func (s *Server) httpNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
-	s.httpExecuteTemplate(w, r, "404.html", &NotFoundContext{Path: r.URL.Path})
+	fmt.Println("not found")
+	templates.PageErrNotFound(r.URL.Path).Render(r.Context(), w)
 }
 
 func (s *Server) httpIndexHandler(w http.ResponseWriter, r *http.Request) {
