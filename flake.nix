@@ -28,7 +28,9 @@
               go
               gopls
               gotools
+
               templ
+              sqlc
             ];
           };
         };
