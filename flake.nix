@@ -47,6 +47,7 @@
               gopls
               gotools
 
+              internal.golang-migrate
               internal.sqlc
               internal.templ
             ];
