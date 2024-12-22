@@ -1,5 +1,9 @@
 package templates
 
+import (
+	"github.com/belak/home/internal"
+)
+
 templ Page(title string) {
 	<!DOCTYPE html>
 	<html lang="en" data-color-mode="auto" data-dark-theme="dark" data-light-theme="light">
@@ -12,6 +16,7 @@ templ Page(title string) {
 		</head>
 		<body>
 			{ children... }
+			Version: { internal.GetVersion() }
 		</body>
 	</html>
 }
