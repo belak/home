@@ -29,7 +29,14 @@
         {
           _module.args.pkgs = import inputs.nixpkgs {
             inherit system;
-            overlays = [ (final: _prev: { internal = import ./nix/pkgs { pkgs = final; }; }) ];
+            overlays = [
+              (final: _prev: {
+                internal = lib.packagesFromDirectoryRecursive {
+                  callPackage = final.callPackage;
+                  directory = ./nix/pkgs;
+                };
+              })
+            ];
           };
 
           formatter = pkgs.nixfmt-rfc-style;
@@ -40,8 +47,8 @@
               gopls
               gotools
 
-              internal.templ-bin
-              internal.sqlc-bin
+              internal.sqlc
+              internal.templ
             ];
           };
         };
