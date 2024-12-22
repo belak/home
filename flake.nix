@@ -9,6 +9,7 @@
       self,
       nixpkgs,
       flake-parts,
+      ...
     }:
     flake-parts.lib.mkFlake { inherit inputs; } {
       systems = [
@@ -19,8 +20,18 @@
       ];
 
       perSystem =
-        { lib, pkgs, ... }:
         {
+          lib,
+          pkgs,
+          system,
+          ...
+        }:
+        {
+          _module.args.pkgs = import inputs.nixpkgs {
+            inherit system;
+            overlays = [ (final: _prev: { internal = import ./nix/pkgs { pkgs = final; }; }) ];
+          };
+
           formatter = pkgs.nixfmt-rfc-style;
 
           devShells.default = pkgs.mkShell {
@@ -29,8 +40,8 @@
               gopls
               gotools
 
-              templ
-              sqlc
+              internal.templ-bin
+              internal.sqlc-bin
             ];
           };
         };
