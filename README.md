@@ -7,4 +7,5 @@ functionalities useful mostly to me.
 
 - [ ] Ripped Movie Tracker
 - [ ] Ripped TV Tracker
+- [ ] Game backlog tracker
 - [ ] Notes

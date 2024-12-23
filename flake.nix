@@ -46,6 +46,7 @@
               go
               gopls
               gotools
+              reflex
 
               internal.golang-migrate
               internal.sqlc
