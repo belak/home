@@ -47,6 +47,7 @@
               gopls
               gotools
               reflex
+              overmind
 
               internal.golang-migrate
               internal.sqlc
