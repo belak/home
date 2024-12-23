@@ -2,7 +2,6 @@ package home
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"os"
 
@@ -31,10 +30,9 @@ func (s *Server) serveHttp(ctx context.Context) error {
 
 func (s *Server) httpNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
-	fmt.Println("not found")
 	templates.PageErrNotFound(r.URL.Path).Render(r.Context(), w)
 }
 
 func (s *Server) httpIndexHandler(w http.ResponseWriter, r *http.Request) {
-	fmt.Println("index")
+	templates.PageIndex().Render(r.Context(), w)
 }
