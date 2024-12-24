@@ -9,8 +9,9 @@ body>footer {
     top: 100vh;
 }
 
-/* I don't particularly like sticky top-bars, since they cover content people
-often care about, so we disable position: sticky for the header navbar. */
+/* In contrast to sticky footers, I don't particularly like sticky top-bars,
+since they cover content people often care about, so we disable position: sticky
+for the header navbar. */
 header.navbar {
     position: static;
 }

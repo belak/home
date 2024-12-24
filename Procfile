@@ -1,2 +1,2 @@
-web: reflex --decoration=none -s -r '\.go$' -- go run ./cmd/home
+web: reflex --decoration=none -s -r '\.go$' -r '\.sql$' -- go run ./cmd/home
 assets: reflex --decoration=none -r '\.templ$' -- go generate ./...

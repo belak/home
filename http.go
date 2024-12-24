@@ -20,6 +20,8 @@ func (s *Server) serveHttp(ctx context.Context) error {
 	mux.Use(middleware.Recoverer)
 
 	mux.Get("/", http.HandlerFunc(s.httpIndexHandler))
+	mux.Get("/login", http.HandlerFunc(s.httpLoginHandler))
+	mux.Post("/login", http.HandlerFunc(s.httpLoginHandler))
 
 	mux.Mount("/static", http.StripPrefix("/static", http.FileServer(http.FS(staticFS))))
 
@@ -35,4 +37,8 @@ func (s *Server) httpNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 
 func (s *Server) httpIndexHandler(w http.ResponseWriter, r *http.Request) {
 	templates.PageIndex().Render(r.Context(), w)
+}
+
+func (s *Server) httpLoginHandler(w http.ResponseWriter, r *http.Request) {
+	templates.PageLogin().Render(r.Context(), w)
 }
