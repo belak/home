@@ -1,5 +1,7 @@
 package layouts
 
+import "github.com/belak/home/internal"
+
 templ Page(title string) {
 	<!DOCTYPE html>
 	<html lang="en">
@@ -18,4 +20,26 @@ templ Page(title string) {
 			@Footer()
 		</body>
 	</html>
+}
+
+templ Header() {
+	<header>
+		<h1>Homeserver</h1>
+		<nav class="f-row justify-content:space-between">
+			<p class="tool-bar">
+				<a href="/">Homeserver</a>
+				<a href="/">Homeserver</a>
+				<a href="/">Homeserver</a>
+			</p>
+			<p class="tool-bar">
+				<a style="text-align: right" class="flex-grow:1 align-self:end" href="/login">Login</a>
+			</p>
+		</nav>
+	</header>
+}
+
+templ Footer() {
+	<footer>
+		Version: { internal.GetVersion() }
+	</footer>
 }
