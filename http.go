@@ -5,40 +5,51 @@ import (
 	"net/http"
 	"os"
 
-	"github.com/go-chi/chi/v5"
-	"github.com/go-chi/chi/v5/middleware"
-
+	"github.com/belak/home/internal/middleware"
 	"github.com/belak/home/templates"
 )
 
 var staticFS = os.DirFS("static")
 
 func (s *Server) serveHttp(ctx context.Context) error {
-	mux := chi.NewMux()
+	mux := http.NewServeMux()
 
-	mux.Use(middleware.Logger)
-	mux.Use(middleware.Recoverer)
+	globalChain := middleware.NewChain(
+		middleware.Logger(s.config.Logger),
+		middleware.Recoverer(s.config.Logger),
+	)
 
-	mux.Get("/", http.HandlerFunc(s.httpIndexHandler))
-	mux.Get("/login", http.HandlerFunc(s.httpLoginHandler))
-	mux.Post("/login", http.HandlerFunc(s.httpLoginHandler))
+	/*
+		requireLogin := internal.NewChain(
+			auth.RequireLogin("/login"),
+		)
+	*/
 
-	mux.Mount("/static", http.StripPrefix("/static", http.FileServer(http.FS(staticFS))))
+	mux.HandleFunc("/", s.httpIndexHandler)
+	mux.HandleFunc("GET /login", s.httpLoginHandler)
+	mux.HandleFunc("POST /login", s.httpLoginHandler)
 
-	mux.NotFound(s.httpNotFoundHandler)
+	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.FS(staticFS))))
 
-	return http.ListenAndServe(s.config.BindAddr, mux)
+	return http.ListenAndServe(s.config.BindAddr, globalChain.Then(mux.ServeHTTP))
 }
 
 func (s *Server) httpNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
-	templates.PageErrNotFound(r.URL.Path).Render(r.Context(), w)
+	templates.NotFoundHandler(r.URL.Path).Render(r.Context(), w)
 }
 
 func (s *Server) httpIndexHandler(w http.ResponseWriter, r *http.Request) {
-	templates.PageIndex().Render(r.Context(), w)
+	// As a special case, if we're in the index handler, and not at the "/"
+	// path, we need to call the not found handler.
+	if r.URL.Path != "/" {
+		s.httpNotFoundHandler(w, r)
+		return
+	}
+
+	templates.IndexPage().Render(r.Context(), w)
 }
 
 func (s *Server) httpLoginHandler(w http.ResponseWriter, r *http.Request) {
-	templates.PageLogin().Render(r.Context(), w)
+	templates.LoginPage().Render(r.Context(), w)
 }

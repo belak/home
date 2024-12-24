@@ -1,2 +1,3 @@
 *.pem
 content
+.overmind.sock

@@ -17,7 +17,7 @@ func NewLogger() (*slog.Logger, error) {
 	var logger *slog.Logger
 
 	config := LoggerConfig{
-		Level: slog.LevelInfo,
+		Level: slog.LevelDebug,
 	}
 
 	err := envconfig.Process("LOG", &config)
