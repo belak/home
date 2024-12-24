@@ -26,7 +26,7 @@ func (s *Server) serveHttp(ctx context.Context) error {
 	*/
 
 	mux.HandleFunc("/", s.httpIndexHandler)
-	mux.HandleFunc("GET /login", s.httpLoginHandler)
+	mux.HandleFunc("GET  /login", s.httpLoginHandler)
 	mux.HandleFunc("POST /login", s.httpLoginHandler)
 
 	mux.Handle("/static/", http.StripPrefix("/static", http.FileServer(http.FS(staticFS))))
