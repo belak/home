@@ -18,11 +18,13 @@ func Recoverer(log *slog.Logger) func(next http.Handler) http.Handler {
 					}
 
 					// TODO: add request id support
-					log.Error("Error during request", slog.Any("err", rvr), slog.Any("stack", debug.Stack()))
+					log.Error("Error during request", slog.Any("err", rvr), slog.Any("stack", string(debug.Stack())))
 
 					if r.Header.Get("Connection") != "Upgrade" {
 						w.WriteHeader(http.StatusInternalServerError)
 					}
+
+					// TODO: do something on error
 				}
 			}()
 
