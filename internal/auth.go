@@ -9,7 +9,7 @@ import (
 	"time"
 )
 
-var AuthInvalidTokenError = errors.New("invalid token")
+var ErrAuthInvalidToken = errors.New("invalid token")
 
 const AuthCookieName = "home-auth-token"
 
@@ -24,7 +24,7 @@ func (u *UserInfo) String() string {
 
 // AuthTokenFunc takes a token and returns either a UserInfo object or an error.
 //
-// If AuthInvalidTokenError is returned, a 401 will be returned to the user,
+// If ErrAuthInvalidToken is returned, a 401 will be returned to the user,
 // otherwise a 500.
 type AuthTokenFunc func(ctx context.Context, token string) (*UserInfo, error)
 
@@ -56,7 +56,7 @@ func authMiddleware(extractToken extractTokenFunc, tokenFunc AuthTokenFunc, unau
 		return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 			if val, ok := extractToken(r); ok {
 				user, err := tokenFunc(r.Context(), val)
-				if errors.Is(err, AuthInvalidTokenError) {
+				if errors.Is(err, ErrAuthInvalidToken) {
 					unauthorizedHandler(w, r)
 					return
 				} else if err != nil {
