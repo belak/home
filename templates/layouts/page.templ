@@ -1,8 +1,11 @@
 package layouts
 
-import "github.com/belak/home/internal"
+import (
+	"github.com/belak/home/internal"
+	"github.com/belak/home/models"
+)
 
-templ Page(title string) {
+templ Page(state *models.SiteState, title string) {
 	<!DOCTYPE html>
 	<html lang="en">
 		<head>

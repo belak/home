@@ -1,9 +1,12 @@
 package templates
 
-import "github.com/belak/home/templates/layouts"
+import (
+	"github.com/belak/home/models"
+	"github.com/belak/home/templates/layouts"
+)
 
-templ InternalError(err error) {
-	@layouts.Page("Internal Error") {
+templ InternalError(state *models.SiteState, err error) {
+	@layouts.Page(state, "Internal Error") {
 		<fieldset>
 			<legend>Error</legend>
 			An internal error has occured: { err.Error() }

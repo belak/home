@@ -1,9 +1,12 @@
 package templates
 
-import "github.com/belak/home/templates/layouts"
+import (
+	"github.com/belak/home/models"
+	"github.com/belak/home/templates/layouts"
+)
 
-templ IndexPage() {
-	@layouts.Page("Homeserver") {
+templ IndexPage(state *models.SiteState) {
+	@layouts.Page(state, "Homeserver") {
 		<p>Index</p>
 	}
 }

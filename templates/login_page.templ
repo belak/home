@@ -1,9 +1,30 @@
 package templates
 
-import "github.com/belak/home/templates/layouts"
+import (
+	"github.com/belak/home/models"
+	"github.com/belak/home/templates/layouts"
+)
 
-templ LoginPage() {
-	@layouts.Page("Login") {
-		<p>Login Page</p>
+type LoginForm struct {
+	Username string `form:"username"`
+	Password string `form:"password"`
+}
+
+templ LoginPage(state *models.SiteState, form *LoginForm) {
+	@layouts.Page(state, "Login") {
+		<div class="box">
+			<h1>Login</h1>
+			<form class="table rows" action="/login">
+				<p>
+					<label for="username">Username</label>
+					<input id="username" value={ form.Username }/>
+				</p>
+				<p>
+					<label for="password">Password</label>
+					<input id="password" type="password"/>
+				</p>
+				<p><input type="submit" value="Submit"/></p>
+			</form>
+		</div>
 	}
 }

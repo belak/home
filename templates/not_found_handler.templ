@@ -1,9 +1,12 @@
 package templates
 
-import "github.com/belak/home/templates/layouts"
+import (
+	"github.com/belak/home/models"
+	"github.com/belak/home/templates/layouts"
+)
 
-templ NotFoundHandler(path string) {
-	@layouts.Page("Page Not Found") {
+templ NotFoundHandler(state *models.SiteState, path string) {
+	@layouts.Page(state, "Page Not Found") {
 		<div class="box bad">
 			<strong class="block titlebar">Error</strong>
 			Page not found: { path }

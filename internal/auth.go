@@ -3,33 +3,26 @@ package internal
 import (
 	"context"
 	"errors"
-	"fmt"
 	"net/http"
 	"strings"
 	"time"
+
+	"github.com/belak/home/internal/middleware"
+	"github.com/belak/home/models"
 )
 
 var ErrAuthInvalidToken = errors.New("invalid token")
 
 const AuthCookieName = "home-auth-token"
 
-type UserInfo struct {
-	ID       int
-	Username string
-}
-
-func (u *UserInfo) String() string {
-	return fmt.Sprintf("UserInfo<ID=%d,Username=%s>", u.ID, u.Username)
-}
-
 // AuthTokenFunc takes a token and returns either a UserInfo object or an error.
 //
 // If ErrAuthInvalidToken is returned, a 401 will be returned to the user,
 // otherwise a 500.
-type AuthTokenFunc func(ctx context.Context, token string) (*UserInfo, error)
+type AuthTokenFunc func(ctx context.Context, token string) (*models.UserInfo, error)
 
-func ExtractUser(ctx context.Context) *UserInfo {
-	if user, ok := ctx.Value(CurrentUserContextKey).(*UserInfo); ok {
+func ExtractUser(ctx context.Context) *models.UserInfo {
+	if user, ok := ctx.Value(middleware.CurrentUserContextKey).(*models.UserInfo); ok {
 		return user
 	}
 
@@ -63,7 +56,7 @@ func authMiddleware(extractToken extractTokenFunc, tokenFunc AuthTokenFunc, unau
 					panic(err)
 				}
 
-				ctx := context.WithValue(r.Context(), CurrentUserContextKey, user)
+				ctx := context.WithValue(r.Context(), middleware.CurrentUserContextKey, user)
 				r = r.WithContext(ctx)
 			}
 

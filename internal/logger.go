@@ -2,7 +2,6 @@ package internal
 
 import (
 	"log/slog"
-	"net/http"
 	"os"
 
 	"github.com/kelseyhightower/envconfig"
@@ -29,8 +28,4 @@ func NewLogger() (*slog.Logger, error) {
 	}
 
 	return logger, err
-}
-
-func InjectLoggerMiddleware(logger *slog.Logger) func(http.Handler) http.Handler {
-	return contextValueMiddleware(LoggerContextKey, logger)
 }

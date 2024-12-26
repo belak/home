@@ -2,21 +2,37 @@ package home
 
 import (
 	"context"
+	"embed"
+	"fmt"
+	"io/fs"
 	"net/http"
-	"os"
 
+	"github.com/belak/home/internal"
 	"github.com/belak/home/internal/middleware"
+	"github.com/belak/home/models"
 	"github.com/belak/home/templates"
 )
 
-var staticFS = os.DirFS("static")
+func mustSubFS(rawFS fs.FS, dir string) fs.FS {
+	ret, err := fs.Sub(rawFS, dir)
+	if err != nil {
+		panic(err.Error())
+	}
+	return ret
+}
+
+//go:embed static
+var rawStaticFS embed.FS
+var staticFS fs.FS = mustSubFS(rawStaticFS, "static")
 
 func (s *Server) serveHttp(ctx context.Context) error {
 	mux := http.NewServeMux()
 
 	globalChain := middleware.NewChain(
-		middleware.Logger(s.config.Logger),
-		middleware.Recoverer(s.config.Logger),
+		middleware.InjectLogger(s.config.Logger),
+		middleware.InjectRequestID,
+		middleware.RequestLogger,
+		middleware.Recoverer,
 	)
 
 	/*
@@ -36,7 +52,7 @@ func (s *Server) serveHttp(ctx context.Context) error {
 
 func (s *Server) httpNotFoundHandler(w http.ResponseWriter, r *http.Request) {
 	w.WriteHeader(http.StatusNotFound)
-	templates.NotFoundHandler(r.URL.Path).Render(r.Context(), w)
+	templates.NotFoundHandler(&models.SiteState{}, r.URL.Path).Render(r.Context(), w)
 }
 
 func (s *Server) httpIndexHandler(w http.ResponseWriter, r *http.Request) {
@@ -47,9 +63,16 @@ func (s *Server) httpIndexHandler(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	templates.IndexPage().Render(r.Context(), w)
+	templates.IndexPage(&models.SiteState{}).Render(r.Context(), w)
 }
 
 func (s *Server) httpLoginHandler(w http.ResponseWriter, r *http.Request) {
-	templates.LoginPage().Render(r.Context(), w)
+	var form templates.LoginForm
+	data, ok := internal.Bind(r, &form)
+	fmt.Println(data, ok)
+	if !ok {
+		// TODO: bad request?
+		return
+	}
+	templates.LoginPage(&models.SiteState{}, &form).Render(r.Context(), w)
 }
