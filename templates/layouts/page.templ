@@ -12,37 +12,37 @@ templ Page(state *models.SiteState, title string) {
 			<meta charset="utf-8"/>
 			<title>{ title } - Belak's Tools</title>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
-			<link rel="stylesheet" href="/static/css/missing-1.1.3.css"/>
+			<link rel="stylesheet" href="https://www.unpkg.com/modern-normalize@3.0.1/modern-normalize.css"/>
 			<link rel="stylesheet" href="/static/css/custom.css"/>
 		</head>
 		<body>
-			@Header()
+			<header>
+				@Header()
+			</header>
 			<main>
 				{ children... }
 			</main>
-			@Footer()
+			<footer>
+				@Footer()
+			</footer>
 		</body>
 	</html>
 }
 
 templ Header() {
-	<header>
-		<h1>Homeserver</h1>
-		<nav class="f-row justify-content:space-between">
-			<p class="tool-bar">
-				<a href="/">Homeserver</a>
-				<a href="/">Homeserver</a>
-				<a href="/">Homeserver</a>
-			</p>
-			<p class="tool-bar">
-				<a style="text-align: right" class="flex-grow:1 align-self:end" href="/login">Login</a>
-			</p>
-		</nav>
-	</header>
+	<h1>Homeserver</h1>
+	<nav>
+		<p>
+			<a href="/">Homeserver</a>
+			<a href="/">Homeserver</a>
+			<a href="/">Homeserver</a>
+		</p>
+		<p>
+			<a href="/login">Login</a>
+		</p>
+	</nav>
 }
 
 templ Footer() {
-	<footer>
-		Version: { internal.GetVersion() }
-	</footer>
+	Version: { internal.GetVersion() }
 }

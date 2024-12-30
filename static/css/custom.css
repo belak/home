@@ -1,17 +1,20 @@
+:root {
+    --base-font-family: -apple-system, BlinkMacSystemFont, avenir next, avenir, segoe ui, helvetica neue, helvetica, Cantarell, Ubuntu, roboto, noto, arial, sans-serif;
+    --serif-font-family: Iowan Old Style, Apple Garamond, Baskerville, Times New Roman, Droid Serif, Times, Source Serif Pro, serif, Apple Color Emoji, Segoe UI Emoji, Segoe UI Symbol;
+    --mono-font-family: Menlo, Consolas, Monaco, Liberation Mono, Lucida Console, monospace;
+}
+
+html {
+    font-family: var(--base-font-family);
+}
+
 /* Simple setup for a sticky footer */
 html,
 body {
-    height: 100vh;
+    min-height: 100vh;
 }
 
 body>footer {
     position: sticky;
     top: 100vh;
-}
-
-/* In contrast to sticky footers, I don't particularly like sticky top-bars,
-since they cover content people often care about, so we disable position: sticky
-for the header navbar. */
-header.navbar {
-    position: static;
 }
