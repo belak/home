@@ -51,7 +51,7 @@ func LoginPage(state *models.SiteState, form *LoginForm) templ.Component {
 				}()
 			}
 			ctx = templ.InitializeContext(ctx)
-			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"box\"><h1>Login</h1><form class=\"table rows\" action=\"/login\"><p><label for=\"username\">Username</label> <input id=\"username\" value=\"")
+			_, templ_7745c5c3_Err = templ_7745c5c3_Buffer.WriteString("<div class=\"box\"><h1>Login</h1><form action=\"/login\"><p><label for=\"username\">Username</label> <input id=\"username\" value=\"")
 			if templ_7745c5c3_Err != nil {
 				return templ_7745c5c3_Err
 			}

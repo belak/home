@@ -14,7 +14,7 @@ templ LoginPage(state *models.SiteState, form *LoginForm) {
 	@layouts.Page(state, "Login") {
 		<div class="box">
 			<h1>Login</h1>
-			<form class="table rows" action="/login">
+			<form action="/login">
 				<p>
 					<label for="username">Username</label>
 					<input id="username" value={ form.Username }/>

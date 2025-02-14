@@ -12,34 +12,34 @@ templ Page(state *models.SiteState, title string) {
 			<meta charset="utf-8"/>
 			<title>{ title } - Belak's Tools</title>
 			<meta name="viewport" content="width=device-width, initial-scale=1"/>
-			<link rel="stylesheet" href="https://www.unpkg.com/modern-normalize@3.0.1/modern-normalize.css"/>
 			<link rel="stylesheet" href="/static/css/custom.css"/>
 		</head>
 		<body>
 			<header>
 				@Header()
 			</header>
-			<main>
+			<main class="container">
 				{ children... }
 			</main>
 			<footer>
-				@Footer()
+				<div class="container">
+					@Footer()
+				</div>
 			</footer>
 		</body>
 	</html>
 }
 
 templ Header() {
-	<h1>Homeserver</h1>
 	<nav>
-		<p>
-			<a href="/">Homeserver</a>
-			<a href="/">Homeserver</a>
-			<a href="/">Homeserver</a>
-		</p>
-		<p>
-			<a href="/login">Login</a>
-		</p>
+		<ul>
+			<li class="active"><a href="/">Homeserver</a></li>
+			<li><a href="/">Movies</a></li>
+			<li><a href="/">TV</a></li>
+		</ul>
+		<ul>
+			<li><a href="/login">Login</a></li>
+		</ul>
 	</nav>
 }
 
